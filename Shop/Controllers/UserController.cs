@@ -42,7 +42,7 @@ namespace Shop.Controllers
             if (user == null)
                 return NotFound(new { message = "Usuário não encontrado" });
 
-            var token = TokenService.GenerateToken(model);
+            var token = TokenService.GenerateToken(user);
 
             return new
             {
