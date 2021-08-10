@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shop.Data;
 using Shop.Models;
@@ -9,11 +10,12 @@ using System.Threading.Tasks;
 
 namespace Shop.Controllers
 {
-    [Route("products")]
+    [Route("v1/products")]
     public class ProductController : ControllerBase
     {
         [HttpGet]
         [Route("")]
+        [AllowAnonymous]
         public async Task<ActionResult<List<Product>>> Get([FromServices]DataContext context)
         {
             var products = await context.Products.Include(x => x.Category).AsNoTracking().ToListAsync();
@@ -22,6 +24,7 @@ namespace Shop.Controllers
 
         [HttpGet]
         [Route("categories/{id:int}")]
+        [AllowAnonymous]
         public async Task<ActionResult<List<Product>>> GetByCategory([FromServices]DataContext context, int id)
         {
             var products = await context.Products.Include(x => x.Category).AsNoTracking().Where(x => x.Category.Id == id).ToListAsync();
@@ -56,32 +59,32 @@ namespace Shop.Controllers
             }
         }
 
-        //[HttpPut]
-        //[Route("{id:int}")]
-        //public async Task<ActionResult<Product>> Put(int id, Product model, [FromServices]DataContext context)
-        //{
-        //    try
-        //    {
-        //        if (id != model.Id)
-        //            return NotFound(new { message = "Produto não encontrada" });
+        [HttpPut]
+        [Route("{id:int}")]
+        public async Task<ActionResult<Product>> Put(int id, Product model, [FromServices] DataContext context)
+        {
+            try
+            {
+                if (id != model.Id)
+                    return NotFound(new { message = "Produto não encontrada" });
 
-        //        if (!ModelState.IsValid)
-        //            return BadRequest(ModelState);
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
 
-        //        context.Entry<Product>(model).State = EntityState.Modified;
-        //        await context.SaveChangesAsync();
+                context.Entry<Product>(model).State = EntityState.Modified;
+                await context.SaveChangesAsync();
 
-        //        return Ok(model);
+                return Ok(model);
 
-        //    }
-        //    catch (DbUpdateConcurrencyException)
-        //    {
-        //        return BadRequest(new { message = "Este registro já foi atualizado" });
-        //    }
-        //    catch (Exception)
-        //    {
-        //        return BadRequest(new { message = "Não foi possível atualizar o produto" });
-        //    }
-        //}
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return BadRequest(new { message = "Este registro já foi atualizado" });
+            }
+            catch (Exception)
+            {
+                return BadRequest(new { message = "Não foi possível atualizar o produto" });
+            }
+        }
     }
 }
