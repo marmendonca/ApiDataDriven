@@ -34,9 +34,12 @@ namespace Shop.Controllers
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
 
+                model.Role = "employee";
+
                 context.Users.Add(model);
                 await context.SaveChangesAsync();
 
+                model.Password = "";
                 return Ok(model);
             }
             catch (Exception)
@@ -55,6 +58,7 @@ namespace Shop.Controllers
 
             var token = TokenService.GenerateToken(user);
 
+            user.Password = "";
             return new
             {
                 user = user,
@@ -78,6 +82,7 @@ namespace Shop.Controllers
                 context.Entry<User>(model).State = EntityState.Modified;
                 await context.SaveChangesAsync();
 
+                model.Password = "";
                 return Ok(model);
             }
             catch (Exception)
